@@ -8,49 +8,45 @@ mod devices;
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = command!()
         .name("Elgato Control CLI")
-        .version("0.1.0")
+        .version("1.0.0")
         .about("Elgato Control CLI")
         .arg(
             Arg::new("ip")
                 .long("ip")
-                .help("Elgato KeyLight/light_clienttrip IP address")
+                .help("Elgato KeyLight/LightStrip IP address")
                 .required(true),
         )
         .arg(
             Arg::new("port")
                 .long("port")
-                .help("Elgato KeyLight/light_clienttrip port")
+                .help("Elgato KeyLight/LightStrip port")
                 .required(true),
         )
         .arg(
-            Arg::new("on")
-                .long("on")
-                .help("Turn on the lightstrip"),
-        )
-        .arg(
-            Arg::new("off")
-                .long("off")
-                .help("Turn off the lightstrip"),
+            Arg::new("toggle")
+                .long("toggle")
+                .help("Turn on/off the Elgato KeyLight/LightStrip")
+                .num_args(0),
         )
         .arg(
             Arg::new("hue")
                 .long("hue")
-                .help("Set the hue of the light_clienttrip"),
+                .help("Set the hue of the Elgato LightStrip"),
         )
         .arg(
             Arg::new("saturation")
                 .long("saturation")
-                .help("Set the saturation of the light_clienttrip"),
+                .help("Set the saturation of the Elgato LightStrip"),
         )
         .arg(
             Arg::new("temperature")
                 .long("temperature")
-                .help("Set the temperature of the keylight"),
+                .help("Set the temperature of the Elgato KeyLight"),
         )
         .arg(
             Arg::new("brightness")
                 .long("brightness")
-                .help("Set the brightness of the light"),
+                .help("Set the brightness of the Elgato KeyLight/LightStrip"),
         )
         .get_matches();
 
@@ -62,8 +58,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let port: usize = port_str.parse().expect("`port` must be a valid number");
 
     let mut light_client = ElgatoClient::new(&ip, port as u16);
-    // If the `on` or `off` flags are present, toggle the lightstrip
-    if matches.contains_id("on") || matches.contains_id("off") {
+    // If the `on` or `off` flags are present, toggle the LightStrip
+    if matches.contains_id("toggle") {
         light_client.toggle();
     }
     // If the `brightness` flag is present, set the brightness of the lightsttrip
