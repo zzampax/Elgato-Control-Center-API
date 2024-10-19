@@ -5,8 +5,8 @@ use std::error::Error;
 mod client;
 mod devices;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let matches = command!()
+fn matches() -> clap::ArgMatches {
+    return command!()
         .name("Elgato Control CLI")
         .version("1.0.0")
         .about("Elgato Control CLI")
@@ -49,6 +49,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help("Set the brightness of the Elgato KeyLight/LightStrip"),
         )
         .get_matches();
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let matches: clap::ArgMatches = matches();
 
     let ip: String = matches.get_one::<String>("ip").unwrap().clone();
     let port_str: String = matches
