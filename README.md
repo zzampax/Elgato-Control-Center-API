@@ -22,10 +22,10 @@ This script is heavly inspired by the [Elgato-Control-Center](https://github.com
   "numberOfLights": 1,
   "lights": [
     {
-      "on": 1, // 0 or 1
-      "hue": 332.000000, // from 0.0 to 360.0
-      "saturation": 81.000000, // from 0.0 to 100.0
-      "brightness": 99 // from 0 to 100
+      "on": 1,
+      "hue": 332.000000,
+      "saturation": 81.000000,
+      "brightness": 99
     }
   ]
 }
@@ -36,9 +36,9 @@ This script is heavly inspired by the [Elgato-Control-Center](https://github.com
   "numberOfLights": 1,
   "lights": [
     {
-      "on": 1, // 0 or 1
-      "brightness": 12, // from 0 to 100
-      "temperature": 143 // ~
+      "on": 1,
+      "brightness": 12,
+      "temperature": 143
     }
   ]
 }
