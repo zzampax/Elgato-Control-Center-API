@@ -1,4 +1,4 @@
-# ElgatoControlCenter-API
+# Elgato-Control-Center-API
 
 <br>
 <div align="center">
