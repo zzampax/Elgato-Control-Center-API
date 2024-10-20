@@ -45,6 +45,15 @@ impl LightStrip {
         self.hue = hue;
         self.saturation = saturation;
     }
+
+    pub fn get_status(&self) -> serde_json::Value {
+        serde_json::json!({
+            "on": self.on,
+            "brightness": self.brightness,
+            "hue": self.hue,
+            "saturation": self.saturation,
+        })
+    }
 }
 
 impl Keylight {
@@ -58,5 +67,13 @@ impl Keylight {
 
     pub fn set_temperature(&mut self, temperature: i32) {
         self.temperature = temperature;
+    }
+
+    pub fn get_status(&self) -> serde_json::Value {
+        serde_json::json!({
+            "on": self.on,
+            "brightness": self.brightness,
+            "temperature": self.temperature,
+        })
     }
 }

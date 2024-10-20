@@ -1,6 +1,7 @@
 use crate::devices::{Light, LightBucket};
 use reqwest::blocking::Client;
 use log::debug;
+use std::process;
 
 #[derive(Clone, Debug)]
 pub struct ElgatoClient {
@@ -10,10 +11,10 @@ pub struct ElgatoClient {
 }
 
 impl Light {
-    pub fn _get_status(&self) -> bool {
+    pub fn get_status(&self) -> serde_json::Value {
         match self {
-            Light::Keylight(light) => light.on == 1,
-            Light::LightStrip(light) => light.on == 1,
+            Light::Keylight(light) => light.get_status(),
+            Light::LightStrip(light) => light.get_status(),
         }
     }
 }
@@ -31,6 +32,11 @@ impl ElgatoClient {
             client,
             light: light_bucket.lights[0].clone(),
         }
+    }
+
+    // toString() method calls get_status() method
+    pub fn to_string(&self) -> String {
+        self.light.get_status().to_string()
     }
 
     pub fn toggle(&mut self) {
@@ -83,7 +89,8 @@ impl ElgatoClient {
                 self.light = Light::Keylight(light);
             }
             Light::LightStrip(_light) => {
-                debug!("Temperature is not supported for LightStrip");
+                println!("{}", serde_json::json!({"error": "Temperature is not supported for LightStrip"}).to_string());
+                process::exit(1);
             }
         }
 
@@ -97,7 +104,8 @@ impl ElgatoClient {
     pub fn set_color(&mut self, saturation: f32, hue: f32) {
         match &self.light {
             Light::Keylight(_) => {
-                debug!("Color is not supported for Keylight");
+                println!("{}", serde_json::json!({"error": "Color is not supported for Keylight"}).to_string());
+                process::exit(1);
             }
             Light::LightStrip(light) => {
                 let mut light = light.clone();

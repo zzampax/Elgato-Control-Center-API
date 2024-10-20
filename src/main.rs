@@ -8,7 +8,7 @@ mod devices;
 fn matches() -> clap::ArgMatches {
     return command!()
         .name("Elgato Control CLI")
-        .version("1.0.0")
+        .version("1.1.0")
         .about("Elgato Control CLI")
         .arg(
             Arg::new("ip")
@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut light_client = ElgatoClient::new(&ip, port as u16);
     // If the `on` or `off` flags are present, toggle the LightStrip
-    if matches.contains_id("toggle") {
+    if matches.value_source("toggle") == Some(clap::parser::ValueSource::CommandLine) {
         light_client.toggle();
     }
     // If the `brightness` flag is present, set the brightness of the lightsttrip
@@ -97,7 +97,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         light_client.set_brightness(brightness);
     }
 
-    println!("{:?}", light_client);
+    println!("{}", light_client.to_string());
 
     Ok(())
 }
