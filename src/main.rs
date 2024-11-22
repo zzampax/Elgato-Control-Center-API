@@ -1,26 +1,49 @@
 use clap::{command, Arg};
-use client::ElgatoClient;
+use client::{Config, ElgatoClient};
 use std::error::Error;
+use std::process;
 
 mod client;
 mod devices;
 
+fn load_config(optional_path: Option<&String>) -> Result<Config, Box<dyn Error>> {
+    let homedir = std::env::var("HOME").map_err(|_| "Failed to read $HOME environment variable")?;
+
+    let path = match optional_path {
+        Some(path) => path.to_string(),
+        None => format!("{}/.config/elgato-control-center/config.toml", homedir),
+    };
+
+    let config = Config::new(path.as_str())
+        .ok_or_else(|| format!("Failed to load configuration from path: {}", path))?;
+
+    Ok(config)
+}
+
 fn matches() -> clap::ArgMatches {
     return command!()
         .name("Elgato Control CLI")
-        .version("1.1.0")
+        .version("1.1.1")
         .about("Elgato Control CLI")
         .arg(
             Arg::new("ip")
                 .long("ip")
                 .help("Elgato KeyLight/LightStrip IP address")
-                .required(true),
+                .required(false),
         )
         .arg(
             Arg::new("port")
                 .long("port")
+                .short('p')
                 .help("Elgato KeyLight/LightStrip port")
-                .required(true),
+                .required(false),
+        )
+        .arg(
+            Arg::new("config")
+                .long("config")
+                .short('c')
+                .help("Config file providing ip and port, default path ~/.config/elgato-control-center/config.toml")
+                .required(false),
         )
         .arg(
             Arg::new("toggle")
@@ -53,15 +76,37 @@ fn matches() -> clap::ArgMatches {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let matches: clap::ArgMatches = matches();
+    let config = load_config(matches.get_one::<String>("config"));
 
-    let ip: String = matches.get_one::<String>("ip").unwrap().clone();
-    let port_str: String = matches
-        .get_one::<String>("port")
-        .expect("`port` is required")
-        .clone();
-    let port: usize = port_str.parse().expect("`port` must be a valid number");
+    let ip: String = match matches.get_one::<String>("ip") {
+        Some(port) => port.clone(),
+        None => match &config {
+            Ok(config) => config.device.ip.clone(),
+            Err(_) => {
+                println!("Error retrieving IP, exiting.");
+                process::exit(1);
+            }
+        },
+    };
 
-    let mut light_client = ElgatoClient::new(&ip, port as u16);
+    let port: u16 = match matches.get_one::<String>("port") {
+        Some(port) => match port.clone().parse() {
+            Ok(port) => port,
+            Err(_) => {
+                println!("Error handling Port, exiting.");
+                process::exit(2);
+            }
+        },
+        None => match &config {
+            Ok(config) => config.device.port.clone(),
+            Err(_) => {
+                println!("Error retrieving Port, exiting.");
+                process::exit(1);
+            }
+        },
+    };
+
+    let mut light_client = ElgatoClient::new(&ip, port);
     // If the `on` or `off` flags are present, toggle the LightStrip
     if matches.value_source("toggle") == Some(clap::parser::ValueSource::CommandLine) {
         light_client.toggle();

@@ -1,7 +1,20 @@
 use crate::devices::{Light, LightBucket};
-use reqwest::blocking::Client;
 use log::debug;
-use std::process;
+use reqwest::blocking::Client;
+use serde::{Deserialize, Serialize};
+use std::{fs, process};
+use toml;
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Config {
+    pub device: Device,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Device {
+    pub ip: String,
+    pub port: u16,
+}
 
 #[derive(Clone, Debug)]
 pub struct ElgatoClient {
@@ -16,6 +29,26 @@ impl Light {
             Light::Keylight(light) => light.get_status(),
             Light::LightStrip(light) => light.get_status(),
         }
+    }
+}
+
+impl Config {
+    pub fn new(path: &str) -> Option<Config> {
+        let content: String = match fs::read_to_string(path) {
+            Ok(content) => content,
+            Err(_) => {
+                println!("Failed to read configuration file");
+                process::exit(2);
+            }
+        };
+        let config: Config = match toml::from_str(&content) {
+            Ok(config) => config,
+            Err(e) => {
+                println!("Failed to parse configuration file: {}", e.to_string());
+                process::exit(3);
+            }
+        };
+        Some(config)
     }
 }
 
@@ -89,7 +122,11 @@ impl ElgatoClient {
                 self.light = Light::Keylight(light);
             }
             Light::LightStrip(_light) => {
-                println!("{}", serde_json::json!({"error": "Temperature is not supported for LightStrip"}).to_string());
+                println!(
+                    "{}",
+                    serde_json::json!({"error": "Temperature is not supported for LightStrip"})
+                        .to_string()
+                );
                 process::exit(1);
             }
         }
@@ -104,7 +141,10 @@ impl ElgatoClient {
     pub fn set_color(&mut self, saturation: f32, hue: f32) {
         match &self.light {
             Light::Keylight(_) => {
-                println!("{}", serde_json::json!({"error": "Color is not supported for Keylight"}).to_string());
+                println!(
+                    "{}",
+                    serde_json::json!({"error": "Color is not supported for Keylight"}).to_string()
+                );
                 process::exit(1);
             }
             Light::LightStrip(light) => {
